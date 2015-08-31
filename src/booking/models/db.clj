@@ -56,7 +56,6 @@
     )
   )
 
-
 (defn create-meetings-table []
   (sql/with-connection
     db (sql/create-table
@@ -81,11 +80,28 @@
 )
 
 
-(defn read-meeting [rid time meeting] 
+(defn read-meeting [rid time date] 
   (sql/with-connection
-    db (sql/with-query-results res ["SELECT * FROM meeting WHERE rid=? AND time=? AND date=? "  rid time date]
+    db (sql/with-query-results res ["SELECT * FROM meetings WHERE rid=? AND time=? AND date=? "  rid time date]
          (do (println "read-meetings called") res)         
          )
     )
 
   )
+
+(defn save-meeting [rid time date name desc]
+(sql/with-connection
+    db
+    (sql/insert-values
+     :meetings
+     [:rid :name :desc :time :date]
+     [rid name desc time date])))
+
+(defn save-room [name seating projector]
+(sql/with-connection
+    db
+    (sql/insert-values
+     :rooms
+     [:name :seating :projector]
+     [name seating projector])
+))

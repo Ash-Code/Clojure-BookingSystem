@@ -38,7 +38,7 @@
             (text-field "name")
             [:p "Meeting description"]
             (text-area {:rows 5 :cols 40} "desc")
-            [:p (str "Meeting time " time "hrs.")]
+            [:p (str "Meeting time " time " hrs.")]
             (hidden-field "rid" rid)
             (hidden-field "time" time)
             (hidden-field "date" date)

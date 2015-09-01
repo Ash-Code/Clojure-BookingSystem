@@ -12,12 +12,13 @@
   (layout/common 
    [:h1 "Welcome"]
    [:h2 "List of available rooms for booking"]
-   (for [{:keys [id name seating projector]} (db/read-rooms)]
-     [:li
-      [:a {:href (str "/room-api?id=" id ) } [:h2 name ]]
-      [:p (str "Seating capacity "  seating)]
-      [:p (str "Projector " projector )]
-      ])
+   [:table  
+    (for [{:keys [id name seating projector]} (db/read-rooms)]
+      [:tr [:td {:border 1}
+            [:a {:href (str "/room-api?id=" id ) } [:h2 name ]]
+            [:p (str "Seating capacity "  seating)]
+            [:p (str "Projector " projector )]]]
+      )]
 
    [:hr]
    [:h2 [:a {:href "/create-room"} "Or create a new room"]]

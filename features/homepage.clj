@@ -23,7 +23,7 @@
 (deftest homepage-greeting
   (let [server (start-server)]
     (start-browser)
-    (to test-base-url)
-    (is (= (text "body") "Hello World"))
+    (to "/")
+    (is (= (text "h1") "Welcome"))
     (stop-browser)
     (stop-server server)))

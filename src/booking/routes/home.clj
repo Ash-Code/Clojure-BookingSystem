@@ -9,12 +9,17 @@
 
 (defn home []
   (layout/common 
+[:h1 "Welcome"]
+[:h2 "List of available rooms for booking"]
 (for [{:keys [id name seating projector]} (db/read-rooms)]
    [:li
     [:a {:href (str "/room-api?id=" id ) } [:h2 name ]]
     [:p (str "Seating capacity "  seating)]
-    [:p (str "Projector " (if (= projector "false" ) "No" "Yes") )]
+    [:p (str "Projector " projector )]
     ])
+
+[:hr]
+[:h2 [:a {:href "/create-room"} "Or create a new room"]]
 ))
 
 (defn meeting [rid time date]
@@ -24,7 +29,7 @@
                           (text-field "name")
                           [:p "Meeting description"]
                           (text-area {:rows 5 :cols 40} "desc")
-                          [:p (str "Meeting time " time)]
+                          [:p (str "Meeting time " time "hrs.")]
                           (hidden-field "rid" rid)
                           (hidden-field "time" time)
                           (hidden-field "date" date)
@@ -42,14 +47,6 @@
   (System/currentTimeMillis))
 
 
-(defn gen []
-  (layout/common
-   [:ul
-    (for [x (range 1 4)] [:li x])
-    ])
-)
-
-
 (defn room [id]
   (layout/common
    [:table
@@ -64,7 +61,14 @@
            (let [date (format-time (+ currtime (* col-iter day)))]
              [:td [:a
                    {:href
-                    (if (= nil (db/read-meeting id row-iter date) )(str "/create-meeting?rid=" id "&time=" row-iter "&date=" date) (str "/show-meeting?rid=" id "&time=" row-iter "&date" date ) )} (if (= nil (db/read-meeting id row-iter date)) "Book" "Booked")] ])
+                    (if (= nil (db/read-meeting id row-iter date) )
+                      (str "/create-meeting?rid=" id "&time="
+                           row-iter "&date=" date)
+                      (str "/show-meeting?rid=" id "&time="
+                           row-iter "&date=" date ) )
+                    }
+                   (if (= nil (db/read-meeting id row-iter date))
+                     "Book" "Booked")] ])
            )]
         )
       )
@@ -72,27 +76,43 @@
    )  
   )
 
+
+
+
 (defn show-meeting [rid time date]
-(layout/common
+
+  (layout/common
+[:h1 (:name (first (db/read-meeting rid time date)))]
+[:h2 (:desc (first (db/read-meeting rid time date)))]
+[:p "At " time " hrs."]
+[:p "On " date]
+[:hr]
+[:h3 (str "In room " (:name (first (db/read-room rid))))]
+[:p (str "With seating capacity " (:seating (first (db/read-room rid))))]
+[:p (str "With projector availability " (:projector (first (db/read-room rid))))]
 
 )
-)
 
+   )
 
 (defn add-room [] 
   (layout/common 
-   (form-to [:post "/create-room"]
+   (form-to [:post "/save-room"]
             [:p "Room name:"]
             (text-field "name")
             [:p "Room seating capacity"]
-            (text-area {:rows 5 :cols 40} "cap")                                        [:br]
-            [:a {:href "/"} (submit-button "submit")])
+            (text-area {:rows 5 :cols 40} "cap")
+            [:p "Room projector availability"]
+            (text-field "projector")
+            [:br]
+            (submit-button "create room"))
    )
   )
 
 
-(defn save-room [name cap]
-  (db/save-room name 20 "false")
+(defn save-room [name cap projector]
+  (db/save-room name 20 projector)
+(str "<script> window.location=\"/\";</script>")
   )
 
 (defn save-meeting
@@ -105,9 +125,9 @@
   (GET "/" [] (home))
   (POST "/save-meeting" [name desc rid time date] (save-meeting rid name desc time date ))
   (GET "/create-meeting" [rid time date] (meeting rid time date) )
-  (POST "/create-room" [name cap] (save-meeting name cap) )
+  (POST "/save-room" [name cap projector] (save-room name cap projector) )
+(GET "/create-room" [] (add-room))
   (GET "/room-api"  [id] (room id) )
   (GET "/show-meeting" [rid time date] (show-meeting rid time date))
   (GET "/rooms/:id" [id] (room id))
-
   )

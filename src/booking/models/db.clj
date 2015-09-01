@@ -6,43 +6,6 @@
          :subprotocol "sqlite",
          :subname "db.sq3"})
 
-(defn read-wikis []
-  (sql/with-connection
-    db
-    (sql/with-query-results res
-      ["SELECT * FROM wikipedia ORDER BY timestamp DESC"]
-      (doall res))))
-
-(defn save-wiki [title body]
-  (sql/with-connection
-    db
-    (sql/insert-values
-     :wikipedia
-     [:title :body :timestamp]
-     [title body (new java.util.Date)])))
-
-
-(defn read-entry [id]
-  (sql/with-connection
-    db (sql/with-query-results res ["SELECT * FROM wikipedia WHERE id=? "  id]
- 
-         (do (println "read-entry called") res)         
-         )
-    )
-  )
-
-(defn create-wikipedia-table []
-  (sql/with-connection
-    db
-    (sql/create-table
-     :wikipedia
-     [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
-     [:timestamp "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]
-     [:title "TEXT"]
-     [:body "TEXT"])
-
-    (sql/do-commands "CREATE INDEX timestamp_index ON wikipedia (timestamp)")))
-
 
 (defn create-rooms-table []
   (sql/with-connection
@@ -51,7 +14,7 @@
         [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
         [:name "TEXT"]
         [:seating "TEXT"]
-        [:projector "BOOLEAN"]
+        [:projector "TEXT"]
         )
     )
   )
@@ -73,9 +36,9 @@
 
 (defn read-room [id]
 (sql/with-connection
-    db (sql/with-query-results res ["SELECT * FROM rooms WHERE id=? "  id]
-         (do (println "read-entry called") res)         
-         )
+    db (sql/with-query-results res ["SELECT * FROM rooms WHERE id=? "  id]        
+        (do res) )
+
     )
 )
 
@@ -89,6 +52,17 @@
   )
 
 
+(defn read-meetings []
+  (sql/with-connection
+    db (sql/with-query-results res ["SELECT * FROM meetings"]
+         (doall res)
+         )
+
+    )
+
+
+  )
+
 (defn read-meeting [rid time date] 
   (sql/with-connection
     db (sql/with-query-results res ["SELECT * FROM meetings WHERE rid=? AND time=? AND date=? "  rid time date]
@@ -98,13 +72,13 @@
 
   )
 
-(defn save-meeting [rid name desc time date]
-(sql/with-connection
-    db
-    (sql/insert-values
-     :meetings
-     [:rid :name :desc :time :date]
-     [rid name desc time date])))
+ (defn save-meeting [rid name desc time date]
+     (sql/with-connection
+       db
+       (sql/insert-values
+        :meetings
+        [:rid :name :desc :time :date]
+        [rid name desc time date])))
 
 (defn save-room [name seating projector]
 (sql/with-connection

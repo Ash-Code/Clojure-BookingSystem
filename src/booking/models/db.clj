@@ -50,7 +50,7 @@
         :rooms
         [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
         [:name "TEXT"]
-        [:seating "INTEGER"]
+        [:seating "TEXT"]
         [:projector "BOOLEAN"]
         )
     )
@@ -80,6 +80,15 @@
 )
 
 
+(defn read-rooms []
+  (sql/with-connection
+    db (sql/with-query-results res ["SELECT * FROM rooms"]
+         (doall res)
+         )
+    )
+  )
+
+
 (defn read-meeting [rid time date] 
   (sql/with-connection
     db (sql/with-query-results res ["SELECT * FROM meetings WHERE rid=? AND time=? AND date=? "  rid time date]
@@ -89,7 +98,7 @@
 
   )
 
-(defn save-meeting [rid time date name desc]
+(defn save-meeting [rid name desc time date]
 (sql/with-connection
     db
     (sql/insert-values

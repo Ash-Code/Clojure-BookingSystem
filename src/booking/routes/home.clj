@@ -131,6 +131,11 @@
   )
 
 
+(defn errormessage [link]
+  (layout/common
+   [:h2 "Invalid data, please try again."] [:br] [:a {:href link} [:h3 "Go back"] ])
+  )
+
 
 (defn save-room [name cap projector]
   (cond
@@ -141,11 +146,6 @@
        (str "<script> window.location=\"/\";</script>")))
   )
 
-
-(defn errormessage [link]
-  (layout/common
-   [:h2 "Invalid data, please try again."] [:br] [:a {:href link} [:h3 "Go back"] ])
-  )
 
 
 

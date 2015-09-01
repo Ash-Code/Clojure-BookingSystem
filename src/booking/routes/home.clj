@@ -8,22 +8,29 @@
 
 
 (defn home []
-  (layout/common 
-[:h1 "Welcome"]
-[:h2 "List of available rooms for booking"]
-(for [{:keys [id name seating projector]} (db/read-rooms)]
-   [:li
-    [:a {:href (str "/room-api?id=" id ) } [:h2 name ]]
-    [:p (str "Seating capacity "  seating)]
-    [:p (str "Projector " projector )]
-    ])
 
-[:hr]
-[:h2 [:a {:href "/create-room"} "Or create a new room"]]
-))
+  (layout/common 
+   [:h1 "Welcome"]
+   [:h2 "List of available rooms for booking"]
+   (for [{:keys [id name seating projector]} (db/read-rooms)]
+     [:li
+      [:a {:href (str "/room-api?id=" id ) } [:h2 name ]]
+      [:p (str "Seating capacity "  seating)]
+      [:p (str "Projector " projector )]
+      ])
+
+   [:hr]
+   [:h2 [:a {:href "/create-room"} "Or create a new room"]]
+   ))
 
 (defn meeting [rid time date]
   (layout/common
+[:br]
+[:br]
+[:h1 "Create a new meeting"]
+[:br]
+[:br]
+
    (form-to [:post "/save-meeting"]
                           [:p "Meeting name:"]
                           (text-field "name")
@@ -46,17 +53,26 @@
 (defn getDate []
   (System/currentTimeMillis))
 
+(defn test [time2]
+  [:tr [:th ""]
+       (for [x (range 0 6)]
+         [:th (format-time (+ time2 (* x (* 24 60 60 1000))))]
+         )]
+)
 
 (defn room [id]
   (layout/common
-   [:table
+[:br]
+[:br]
+[:h1 "Please select a day and time"]
+[:br]
+[:br]
+   [:table {:cellpadding 14 :border 2}
+    (test (getDate))
     (let [currtime (getDate) day (* 24 60 60 1000)]
-      [:tr [:td "empty"]
-       (for [x (range 0 6)]
-         [:td (format-time (+ currtime (* x day)))]
-         )]
       (for [row-iter (range 9 21)]
-        [:tr [:th row-iter] 
+
+        [:tr [:th (str row-iter ":00 hrs ")] 
          (for [col-iter (range 0 6)]
            (let [date (format-time (+ currtime (* col-iter day)))]
              [:td [:a
@@ -76,24 +92,22 @@
    )  
   )
 
-
-
-
 (defn show-meeting [rid time date]
 
   (layout/common
-[:h1 (:name (first (db/read-meeting rid time date)))]
-[:h2 (:desc (first (db/read-meeting rid time date)))]
-[:p "At " time " hrs."]
-[:p "On " date]
-[:hr]
-[:h3 (str "In room " (:name (first (db/read-room rid))))]
-[:p (str "With seating capacity " (:seating (first (db/read-room rid))))]
-[:p (str "With projector availability " (:projector (first (db/read-room rid))))]
-
-)
+   [:h1 (:name (first (db/read-meeting rid time date)))]
+   [:h2 (:desc (first (db/read-meeting rid time date)))]
+   [:p "At " time " hrs."]
+   [:p "On " date]
+   [:hr]
+   [:h3 (str "In room " (:name (first (db/read-room rid))))]
+   [:p (str "With seating capacity " (:seating (first (db/read-room rid))))]
+   [:p (str "With projector availability "
+            (:projector (first (db/read-room rid))))]
 
    )
+
+  )
 
 (defn add-room [] 
   (layout/common 
@@ -111,14 +125,15 @@
 
 
 (defn save-room [name cap projector]
-  (db/save-room name 20 projector)
+  (db/save-room name cap projector)
 (str "<script> window.location=\"/\";</script>")
   )
+
 
 (defn save-meeting
   [rid name desc time date]
   (db/save-meeting rid name desc time date)
-(str "<script> window.location=\"/\";</script>")
+(str "<script> window.location=\"/room-api?id="rid "\"</script>")
   )
 
 (defroutes home-routes

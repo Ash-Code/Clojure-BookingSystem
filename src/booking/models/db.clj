@@ -57,16 +57,13 @@
     db (sql/with-query-results res ["SELECT * FROM meetings"]
          (doall res)
          )
-
     )
-
-
   )
 
 (defn read-meeting [rid time date] 
   (sql/with-connection
     db (sql/with-query-results res ["SELECT * FROM meetings WHERE rid=? AND time=? AND date=? "  rid time date]
-         (do (println "read-meetings called") res)         
+     (do res)         
          )
     )
 

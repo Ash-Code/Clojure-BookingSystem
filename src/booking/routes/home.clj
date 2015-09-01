@@ -23,26 +23,27 @@
    [:h2 [:a {:href "/create-room"} "Or create a new room"]]
    ))
 
+
 (defn meeting [rid time date]
   (layout/common
-[:br]
-[:br]
-[:h1 "Create a new meeting"]
-[:br]
-[:br]
+   [:br]
+   [:br]
+   [:h1 "Create a new meeting"]
+   [:br]
+   [:br]
 
    (form-to [:post "/save-meeting"]
-                          [:p "Meeting name:"]
-                          (text-field "name")
-                          [:p "Meeting description"]
-                          (text-area {:rows 5 :cols 40} "desc")
-                          [:p (str "Meeting time " time "hrs.")]
-                          (hidden-field "rid" rid)
-                          (hidden-field "time" time)
-                          (hidden-field "date" date)
-                          [:p (str "Meeting day " date)]
-                          [:br]
-                          (submit-button "submit"))))
+            [:p "Meeting name:"]
+            (text-field "name")
+            [:p "Meeting description"]
+            (text-area {:rows 5 :cols 40} "desc")
+            [:p (str "Meeting time " time "hrs.")]
+            (hidden-field "rid" rid)
+            (hidden-field "time" time)
+            (hidden-field "date" date)
+            [:p (str "Meeting day " date)]
+            [:br]
+            (submit-button "submit"))))
 
 
 (defn format-time [timestamp]
@@ -55,7 +56,7 @@
 
 (defn test [time2]
   [:tr [:th ""]
-       (for [x (range 0 6)]
+       (for [x (range 0 7)]
          [:th (format-time (+ time2 (* x (* 24 60 60 1000))))]
          )]
 )
@@ -70,10 +71,10 @@
    [:table {:cellpadding 14 :border 2}
     (test (getDate))
     (let [currtime (getDate) day (* 24 60 60 1000)]
-      (for [row-iter (range 9 21)]
+      (for [row-iter (range 9 24)]
 
         [:tr [:th (str row-iter ":00 hrs ")] 
-         (for [col-iter (range 0 6)]
+         (for [col-iter (range 0 7)]
            (let [date (format-time (+ currtime (* col-iter day)))]
              [:td [:a
                    {:href
@@ -111,37 +112,62 @@
 
 (defn add-room [] 
   (layout/common 
+[:br]
+[:br]
+[:h1 "Create a new room"]
+[:br]
+[:br]
    (form-to [:post "/save-room"]
             [:p "Room name:"]
             (text-field "name")
             [:p "Room seating capacity"]
-            (text-area {:rows 5 :cols 40} "cap")
+            (text-field "cap")
             [:p "Room projector availability"]
             (text-field "projector")
+            [:br]
             [:br]
             (submit-button "create room"))
    )
   )
 
 
+
 (defn save-room [name cap projector]
-  (db/save-room name cap projector)
-(str "<script> window.location=\"/\";</script>")
+  (cond
+   (empty? name) (errormessage "/")
+   (empty? cap) (errormessage "/")
+   :else
+   (do (db/save-room name cap projector)
+       (str "<script> window.location=\"/\";</script>")))
   )
+
+
+(defn errormessage [link]
+  (layout/common
+   [:h2 "Invalid data, please try again."] [:br] [:a {:href link} [:h3 "Go back"] ])
+  )
+
 
 
 (defn save-meeting
   [rid name desc time date]
-  (db/save-meeting rid name desc time date)
-(str "<script> window.location=\"/room-api?id="rid "\"</script>")
+  (cond 
+   (empty? name) (errormessage (str "/room-api?id=" rid))
+   (empty? desc) (errormessage (str "/room-api?id=" rid))
+   :else
+   (do (db/save-meeting rid name desc time date)
+       (str "<script> window.location=\"/room-api?id="rid "\"</script>")))
+ 
   )
+
 
 (defroutes home-routes
   (GET "/" [] (home))
-  (POST "/save-meeting" [name desc rid time date] (save-meeting rid name desc time date ))
+  (POST "/save-meeting" [name desc rid time date]
+        (save-meeting rid name desc time date ))
   (GET "/create-meeting" [rid time date] (meeting rid time date) )
   (POST "/save-room" [name cap projector] (save-room name cap projector) )
-(GET "/create-room" [] (add-room))
+  (GET "/create-room" [] (add-room))
   (GET "/room-api"  [id] (room id) )
   (GET "/show-meeting" [rid time date] (show-meeting rid time date))
   (GET "/rooms/:id" [id] (room id))

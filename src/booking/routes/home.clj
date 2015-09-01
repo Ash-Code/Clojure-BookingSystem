@@ -23,11 +23,55 @@
                           [:br]
                           [:a {:href "/"} (submit-button "submit")])))
 
-(defn room[id]
-"some"
+(defn generate-table [id]
+
+)
+(defn format-time [timestamp]
+  (-> "dd-MM-yy"
+      (java.text.SimpleDateFormat.)
+      (.format timestamp)))
+
+(defn getDate []
+  (System/currentTimeMillis))
+
+
+(defn gen []
+  (layout/common
+   [:ul
+    (for [x (range 1 4)] [:li x])
+    ])
 )
 
 
+(defn room[id]
+  (layout/common
+   [:table
+    (let [currtime (getDate) day (* 24 60 60 1000)]
+      [:tr [:th ""]
+       (for [x (range 0 6)]
+         [:th (format-time (+ currtime (* x day)))]
+         )]
+      (for [row-iter (range 0 11)]
+        [:tr [:th row-iter] 
+         (for [col-iter (range 0 6)]
+           [:td (format-time (+ currtime (* col-iter day)))]
+           )]
+        )
+      )
+    ]
+   )
+  )
+
+
+
+
+(defn make-row [currtime]
+
+  (loop [col-iter 0]
+(println col-iter)
+    [:td (format-time (+ currtime (* col-iter (* 24 60 60 1000))))]
+    (if (> col-iter 6) () (recur (inc col-iter)) )
+    ))
 
 (defn save-meeting
 [rid name desc time date]
@@ -36,6 +80,8 @@
 
 (defroutes home-routes
   (GET "/" [] (home))
-  (POST "/create-meeting" [name desc rid time date] (save-meeting rid name desc time date ))
+  (POST "/create-meeting" [name desc rid time date] (save-meeting rid name desc time date )
+)
+  (GET "/rooms/:id" [id] (room id))
 
 )
